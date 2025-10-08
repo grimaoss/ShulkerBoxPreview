@@ -1,0 +1,11 @@
+#folders
+build/
+headers/
+.vscode/
+tags/
+#script
+build.sh
+#test
+test.txt
+
+#
