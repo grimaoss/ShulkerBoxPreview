@@ -1,11 +1,11 @@
 #folders
+Amethyst/
 build/
 headers/
 .vscode/
-tags/
 #script
 build.sh
 #test
-test.txt
-
-#
+exp/
+#files
+itemhooks.h

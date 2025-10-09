@@ -1,7 +1,8 @@
 #pragma once
 #include "itemstackbase.h"
 #include <string>
-#
+#include <stdio.h>
+
 
 class ShulkerBoxBlockItem;
 class Level;
@@ -14,7 +15,7 @@ Shulker_appendHover_t ShulkerBoxBlockItem_appendFormattedHovertext_orig = nullpt
 
 // hook append
 void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
-    void *self,
+    ShulkerBoxBlockItem *self,
     void *stack,
     void *level,
     std::string &out,
@@ -22,6 +23,6 @@ void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
 {
     if (ShulkerBoxBlockItem_appendFormattedHovertext_orig)
         ShulkerBoxBlockItem_appendFormattedHovertext_orig(self, stack, level, out, flag);
-
+        printf("\n\nHook gets called");
         out.append("\n§6Preview Goes Here");
 }
