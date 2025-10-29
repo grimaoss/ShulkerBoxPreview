@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <stdio.h>
-#include "itemhooks.h"
 
 class WeaponItem;
 
@@ -21,5 +20,9 @@ void WeaponItem_appendFormattedHovertext_hook(
     if (WeaponItem_appendFormattedHovertext_orig) {
         WeaponItem_appendFormattedHovertext_orig(self, stack, level, out, flag);
     } 
-     out.append("\n§6Info goes here"); 
+     out.append("\n§6 This info appears under\n"); 
+     out.append("\n§6 WeaponItem class \n"); 
+    //   for some reason 1.16 pdb lacks weaponitem class 
+    /// idk if WeaponItemCmp inherits from WeaponItem itself
+
 }

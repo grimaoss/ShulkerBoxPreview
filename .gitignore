@@ -8,4 +8,5 @@ build.sh
 #test
 exp/
 #files
-itemhooks.h
+blocktypehook.h
+Doc.txt

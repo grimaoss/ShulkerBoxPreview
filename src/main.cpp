@@ -37,39 +37,30 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
         reinterpret_cast<Shulker_appendHover_t>(vtshulk53[53]);
     vtshulk53[53] = reinterpret_cast<void *>(&ShulkerBoxBlockItem_appendFormattedHovertext_hook);
 
-    //was itemstackbase here
-
-    //HovertextRenderer
+    // HovertextRenderer
     auto _ZTS17HoverTextRenderer = hat::find_pattern(range1, hat::object_to_signature("17HoverTextRenderer")).get();
     auto _ZTI17HoverTextRenderer = hat::find_pattern(range2, hat::object_to_signature(_ZTS17HoverTextRenderer)).get() - sizeof(void *);
     auto _ZTV17HoverTextRenderer = hat::find_pattern(range2, hat::object_to_signature(_ZTI17HoverTextRenderer)).get() + sizeof(void *);
-    //slot17
+    // slot17
     void **vtHR = reinterpret_cast<void **>(_ZTV17HoverTextRenderer);
-    HoverRenderer_renderHoverBox_orig = 
+    HoverRenderer_renderHoverBox_orig =
         reinterpret_cast<RenderHoverBoxFn>(vtHR[17]);
     vtHR[17] = reinterpret_cast<void *>(&HoverRenderer_renderHoverBox_hook);
-
-    // //itemrelated//
-    // auto itemstr = hat::find_pattern(range1, hat::object_to_signature("4Item")).get();
-    // auto itemtyp = hat::find_pattern(range2, hat::object_to_signature(itemstr)).get() - sizeof(void *);
-    // auto itemvtb = hat::find_pattern(range2, hat::object_to_signature(itemtyp)).get() + sizeof(void *);
-    // //slot 53
-    // void **vti = reinterpret_cast<void **>(itemvtb);
-    // Item_getMaxDamage_orig = 
-    //     reinterpret_cast<Item_getMaxDamage_t>(vti[53]);
-    // vti[36] = reinterpret_cast<void *>(&Item_getMaxDamage_hook);
 
     auto witemstr = hat::find_pattern(range1, hat::object_to_signature("10WeaponItem")).get();
     auto witemtyp = hat::find_pattern(range2, hat::object_to_signature(witemstr)).get() - sizeof(void *);
     auto witemvtb = hat::find_pattern(range2, hat::object_to_signature(witemtyp)).get() + sizeof(void *);
     void **vtw = reinterpret_cast<void **>(witemvtb);
-    WeaponItem_appendFormattedHovertext_orig = 
+    WeaponItem_appendFormattedHovertext_orig =
         reinterpret_cast<Weapon_appendHover_t>(vtw[53]);
     vtw[53] = reinterpret_cast<void *>(&WeaponItem_appendFormattedHovertext_hook);
-    //this is really ugly Dx
-    //pickaxeitem
-    auto pitemstr = hat::find_pattern(range1, hat::object_to_signature("11PickaxeItem")).get();
-    auto pitemtyp = hat::find_pattern(range2, hat::object_to_signature(pitemstr)).get() - sizeof(void *);
-    auto pitemvtb = hat::find_pattern(range2, hat::object_to_signature(pitemtyp)).get() + sizeof(void *);
-    void **vtp = reinterpret_cast<void **>(pitemvtb);
+
+    // auto blocktypestr = hat::find_pattern(range1, hat::object_to_signature("9BlockType")).get();
+    // auto blocktypestyp = hat::find_pattern(range2, hat::object_to_signature(blocktypestr)).get() - sizeof(void *);
+    // auto blocktypevtb = hat::find_pattern(range2, hat::object_to_signature(blocktypestyp)).get() + sizeof(void *);
+    // void **vtblocktype = reinterpret_cast<void **>(blocktypevtb);
+    // BuildDescription_orig = 
+    //     reinterpret_cast<BuildDescription_t>(vtblocktype[113]);
+    // vtblocktype[113] = reinterpret_cast<void *>(&BuildDescription_hook);
+
 }
