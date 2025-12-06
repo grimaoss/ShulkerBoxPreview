@@ -3,12 +3,17 @@
 #include <span>
 #include <string>
 #include "main.h"
+#include <utility>
+#include <optional>
 #include "util/keybinds.h"
+#include <safetyhook.hpp>
 #include <libhat.hpp>
+#include <libhat/scanner.hpp>
 
 extern "C" [[gnu::visibility("default")]] void mod_preinit() {}
 extern "C" [[gnu::visibility("default")]] void mod_init()
 {
+    using namespace hat::literals::signature_literals;
     void *mcLib = dlopen("libminecraftpe.so", 0);
     if (!mcLib)
     {
@@ -28,8 +33,16 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
     dl_iterate_phdr([](dl_phdr_info *info, size_t, void *data)
                     { return (*static_cast<decltype(callback) *>(data))(*info); }, &callback);
 
+    auto scan = [range1](const auto&... sig) {
+        void* addr;
+        ((addr = hat::find_pattern(range1, sig, hat::scan_alignment::X16).get()) || ...);
+        return addr;
+    };
     SP_register_keybinds();
 
+    // auto functionaddr = scan(
+    // "funcsig"_sig
+    // );
     // ShulkerBoxBlockItem
     auto ZTS19ShulkerBoxBlockItem = hat::find_pattern(range1, hat::object_to_signature("19ShulkerBoxBlockItem")).get();
     auto _ZTI19ShulkerBoxBlockItem = hat::find_pattern(range2, hat::object_to_signature(ZTS19ShulkerBoxBlockItem)).get() - sizeof(void *);

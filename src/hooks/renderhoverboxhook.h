@@ -1,5 +1,4 @@
 #pragma once
-#include "ui/minecraftuirendercontext.h"
 #include "ui/hoverrenderer.h"
 #include "shulkerenderer/shulkerrenderer.h"
 #include "shulkerenderer/colors.h"
@@ -47,29 +46,11 @@ void HoverRenderer_renderHoverBox_hook(
 
     mce::Color accent = getShulkerTint(colorCode);
 
-    float x0 = self->mCursorX + self->mOffsetX;
-    float y0 = self->mCursorY + self->mOffsetY;
-    float x1 = x0 + self->mBoxWidth;
-    float y1 = y0 + self->mBoxHeight;
-
-    const float th = 2.0f;
-
-    RectangleArea top { x0, x1,      y0,      y0 + th };
-    RectangleArea bot { x0, x1,      y1 - th, y1     };
-    RectangleArea lef { x0, x0 + th, y0,      y1     };
-    RectangleArea rig { x1 - th, x1, y0,      y1     };
-
-    ctx->fillRectangle(top, accent, accent.a);
-    ctx->fillRectangle(bot, accent, accent.a);
-    ctx->fillRectangle(lef, accent, accent.a);
-    ctx->fillRectangle(rig, accent, accent.a);
-
-    float px = x0 + 3.0f;
-    float py = y1 + 4.0f;
+    float px = self->mCursorX + self->mOffsetX + 2.0f;
+    float py = self->mCursorY + self->mOffsetY + self->mBoxHeight + 2.0f;
 
     extern bool gSP_ToggleMode;
     if (!gSP_ToggleMode) return;
-
-
+    
     ShulkerRenderer::render(ctx, px, py, colorCode);
 }

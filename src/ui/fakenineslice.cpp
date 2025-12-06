@@ -109,11 +109,12 @@ void NineSlice::draw(MinecraftUIRenderContext* ctx,
     {
         ctx->drawImage(
             tex,
-            &img.pos,
-            &img.size,
-            &img.uvPos,
-            &img.uvSize
-        );
+            &img.pos.x,
+            &img.size.x,
+            &img.uvPos.x,
+            &img.uvSize.x,
+            1
+);
 
         if (useOverlay) {
             RectangleArea r;

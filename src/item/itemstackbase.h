@@ -6,6 +6,7 @@ class CompoundTag;
 
 class ItemStackBase {
 public:
+    void*        vtable;
     void*        mItem;       
     CompoundTag* mUserData; 
 

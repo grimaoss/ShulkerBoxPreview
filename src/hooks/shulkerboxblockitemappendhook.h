@@ -62,8 +62,6 @@ void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     out.append("\n");
     out.append(hasNbt ? "Contains items" : "Empty Shulker Box");
     out.append("\n§7Press §eH§7 to toggle preview");
-    out.append("\n");
     out.append("\xC2\xA7#");
-    out.push_back(colorCode);
     out.append("\xC2\xA7v");
 }

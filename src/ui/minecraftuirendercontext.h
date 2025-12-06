@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdint>
 
+//this whole thing is basically copied over from amethyst and 1.16 pdb, except for a few which have been tested and work
 #pragma pack(push, 4)
 struct NinesliceInfo
 {
@@ -83,11 +84,13 @@ public:
 
     virtual void flushText(float);
     virtual void drawImage(
-        mce::TexturePtr const &,
-        void const *pos, 
-        void const *size,
-        void const *uv0, 
-        void const *uv1);
+        mce::TexturePtr const& tex,
+        float const* pos,   
+        float const* size,   
+        float const* uv0,    
+        float const* uv1,   
+        unsigned char flags //
+);
 
     virtual void drawNineslice(
         mce::TexturePtr const &, NinesliceInfo const &);
