@@ -4,7 +4,6 @@
 #include <string>
 //why?
 class ItemStackBase;
-class BaseActorRenderContext;
 
 using CompoundTag_getList_t =
     void* (*)(void* compound, const char* key, size_t len);
@@ -36,3 +35,12 @@ extern ItemStackBase_ctor_t ItemStackBase_ctor;
 using ItemStackBase_getDamageValue_t = short (*)(ItemStackBase*);
 
 extern ItemStackBase_getDamageValue_t ItemStackBase_getDamageValue;
+//
+using Item_getId_t = unsigned short (*)(void*);
+extern Item_getId_t Item_getId; 
+
+using ItemStackBase_getItem_t = void* (*)(ItemStackBase*); 
+extern ItemStackBase_getItem_t ItemStackBase_getItem;
+
+using CompoundTag_getByte_t = unsigned char (*)(void*, const char*, size_t);
+extern CompoundTag_getByte_t CompoundTag_getByte;
