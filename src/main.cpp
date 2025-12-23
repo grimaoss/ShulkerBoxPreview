@@ -99,6 +99,24 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
     ItemStackBase_getDamageValue = 
     reinterpret_cast<ItemStackBase_getDamageValue_t>(isbgetdmgaddr);
 
+    auto Item_getIdaddr = scan ( 
+        "0F B7 87 8A 00 00 00 C3"_sig
+    ); 
+    Item_getId = 
+    reinterpret_cast<Item_getId_t>(Item_getIdaddr);
+
+    auto ItemStackBase_getItemaddr = scan(
+        "48 8B 47 08 48 85 C0 74 04 48 8B 00 C3 31 C0 C3"_sig
+    ); 
+    ItemStackBase_getItem =  
+    reinterpret_cast<ItemStackBase_getItem_t>(ItemStackBase_getItemaddr);
+
+    auto CompoundTag_getByteAddr = scan( 
+        "53 48 83 EC 20 48 89 FB 64 48 8B 04 25 28 00 00 00 48 89 44 24 18 48 89 74 24 08 48 89 54 24 10 48 83 C7 08 48 8D 74 24 08 E8 62 D8 01 00 48 83"_sig 
+    ); 
+    CompoundTag_getByte = 
+    reinterpret_cast<CompoundTag_getByte_t>(CompoundTag_getByteAddr);
+
     // ShulkerBoxBlockItem
     auto ZTS19ShulkerBoxBlockItem = hat::find_pattern(range1, hat::object_to_signature("19ShulkerBoxBlockItem")).get();
     auto _ZTI19ShulkerBoxBlockItem = hat::find_pattern(range2, hat::object_to_signature(ZTS19ShulkerBoxBlockItem)).get() - sizeof(void *);
