@@ -2,48 +2,14 @@
 #include "item/itemstackbase.h"
 #include "shulkerenderer/colors.h"
 #include "util/xhelper.h"
+#include "util/scache.h"
 #include <string>
-#include <cstddef>
-
-extern bool gSP_ToggleMode;
 
 class ShulkerBoxBlockItem;
 
-static inline uint8_t getTagId(void* tag){
-    auto vtbl = *reinterpret_cast<void***>(tag);
-    auto fn   = reinterpret_cast<uint8_t (*)(void*)>(vtbl[6]);
-    return fn(tag);
-}
+using Shulker_appendHover_t = void (*)(void*, ItemStackBase*, void*, std::string&, bool);
 
-static inline std::string extractShulkerColorName(const std::string& dbg){
-    const std::string key = "mBlock = name: minecraft:";
-    auto pos = dbg.find(key);
-    if (pos == std::string::npos)
-        return "undyed";
-
-    pos += key.size();
-    auto end = dbg.find(',', pos);
-    if (end == std::string::npos)
-        end = dbg.size();
-
-    std::string full = dbg.substr(pos, end - pos);
-    const std::string suffix = "_shulker_box";
-
-    if (full.size() > suffix.size() &&
-        full.rfind(suffix) == full.size() - suffix.size())
-        full.resize(full.size() - suffix.size());
-
-    if (full.empty())
-        full = "undyed";
-
-    return full;
-}
-
-using Shulker_appendHover_t =
-    void (*)(void*, ItemStackBase*, void*, std::string&, bool);
-
-inline Shulker_appendHover_t
-    ShulkerBoxBlockItem_appendFormattedHovertext_orig = nullptr;
+inline Shulker_appendHover_t ShulkerBoxBlockItem_appendFormattedHovertext_orig = nullptr;
 
 inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     ShulkerBoxBlockItem* self,
@@ -55,6 +21,9 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     if (ShulkerBoxBlockItem_appendFormattedHovertext_orig)
         ShulkerBoxBlockItem_appendFormattedHovertext_orig(
             self, stack, level, out, flag);
+    size_t pos = out.find('\n');
+    if (pos != std::string::npos)
+        out.erase(pos);
 
     if (!stack || !stack->mUserData)
         return;
@@ -62,63 +31,51 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     if (!CompoundTag_getList ||
         !ListTag_get ||
         !ListTag_size ||
-        !ItemStackBase_ctor ||
-        !ItemStackBase_loadItem ||
-        !ItemStackBase_getName)
+        !ItemStackBase_loadItem)
         return;
+
+    static int sIndex = 0;
+    int index = sIndex++ % SHULKER_CACHE_SIZE;
+
+    for (int i = 0; i < 27; ++i)
+        gShulkerCacheInit[index][i] = false;
 
     void* list = CompoundTag_getList(stack->mUserData, "Items", 5);
     if (!list)
         return;
 
-    constexpr int MAX_PREVIEW = 27;
+    int size = ListTag_size(list);
 
-    int size   = ListTag_size(list);
-    int shown  = 0;
-    int hidden = 0;
-
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < size && i < 27; ++i) {
         void* tag = ListTag_get(list, i);
-        if (!tag || getTagId(tag) != 10)
+        if (!tag)
             continue;
 
-        if (shown >= MAX_PREVIEW) {
-            ++hidden;
-            continue;
-        }
-	
-        alignas(16) std::byte buf[0x100]{};
-        auto* loaded = reinterpret_cast<ItemStackBase*>(buf);
-
-        ItemStackBase_ctor(loaded);
-        ItemStackBase_loadItem(loaded, tag);
-
-        std::string name;
-        ItemStackBase_getName(&name, loaded);
-	
-        uint8_t count =
-            *reinterpret_cast<uint8_t*>(
-                reinterpret_cast<char*>(loaded) + 34);
-
-        out += "\n§a";
-        out += name.empty() ? "Item" : name;
-        out += " x";
-        out += std::to_string(count);
-
-        ++shown;
+        ItemStackBase* dst = asISB(gShulkerCache[index][i]);
+        ItemStackBase_loadItem(dst, tag);
+        gShulkerCacheInit[index][i] = true;
     }
 
-    if (hidden > 0) {
-        out += "\n§7and ";
-        out += std::to_string(hidden);
-        out += " more…";
-    }
+    static const char hexmap[] = "0123456789abcdef";
+    char hi = hexmap[(index >> 4) & 0xF];
+    char lo = hexmap[index & 0xF];
 
-    //marker
+    out.insert(0, "\xC2\xA7");
+    out.insert(2, 1, hi);
+    out.insert(3, "\xC2\xA7");
+    out.insert(5, 1, lo);
+
+    if (!ItemStackBase_getItem || !Item_getId)
+        return;
+
+    void* rootItem = ItemStackBase_getItem(stack);
+    if (!rootItem)
+        return;
+
+    char color = getShulkerColorCodeFromItemId(Item_getId(rootItem));
+
     out += "\n§7Press §eH§7 to toggle preview";
     out += "\xC2\xA7#";
-    out.push_back(
-        getShulkerColorCodeFromName(
-            extractShulkerColorName(stack->toDebugString())));
+    out.push_back(color);
     out += "\xC2\xA7v";
 }

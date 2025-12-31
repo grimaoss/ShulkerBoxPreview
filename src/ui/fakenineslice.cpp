@@ -108,12 +108,11 @@ void NineSlice::draw(MinecraftUIRenderContext* ctx,
     auto drawQuad = [&](ImageInfo const& img)
     {
         ctx->drawImage(
-            tex,
-            &img.pos.x,
-            &img.size.x,
-            &img.uvPos.x,
-            &img.uvSize.x,
-            1
+        tex,
+        img.pos,
+        img.size,
+        img.uvPos,
+        img.uvSize
 );
 
         if (useOverlay) {

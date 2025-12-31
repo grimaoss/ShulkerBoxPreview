@@ -9,6 +9,7 @@ public:
     static void render(
         MinecraftUIRenderContext* ctx,
         float x, float y,
+        int index,
         char colorCode);
 
 private:

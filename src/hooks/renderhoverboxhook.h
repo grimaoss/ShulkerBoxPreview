@@ -1,19 +1,23 @@
 #pragma once
 #include "ui/hoverrenderer.h"
 #include "shulkerenderer/shulkerrenderer.h"
-#include "shulkerenderer/colors.h"
 #include "util/keybinds.h"
 #include <string>
 
 static bool sPreviewEnabled = false;
 static bool sWasHDown = false;
 
-using RenderHoverBoxFn =
-    void (*)(void*, MinecraftUIRenderContext*, void*, void*, float);
+using RenderHoverBoxFn = void (*)(void*, MinecraftUIRenderContext*, void*, void*, float);
 
-RenderHoverBoxFn HoverRenderer_renderHoverBox_orig = nullptr;
+inline RenderHoverBoxFn HoverRenderer_renderHoverBox_orig = nullptr;
 
-void HoverRenderer_renderHoverBox_hook(
+static inline int hex(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    return 0;
+}
+
+inline void HoverRenderer_renderHoverBox_hook(
     void* selfPtr,
     MinecraftUIRenderContext* ctx,
     void* client,
@@ -21,46 +25,41 @@ void HoverRenderer_renderHoverBox_hook(
     float someFloat)
 {
     HoverRenderer* self = reinterpret_cast<HoverRenderer*>(selfPtr);
-    const std::string& text = self->mFilteredContent;
 
     HoverRenderer_renderHoverBox_orig(selfPtr, ctx, client, aabb, someFloat);
 
-    if (text.empty() || !ctx){
+    if (!ctx){
         sWasHDown = false;
         return;
     }
 
-    if (text.find("\xC2\xA7v") == std::string::npos){
-        sWasHDown = false;
-        return;
-    }
-
-    char colorCode = '0';
-    bool found = false;
-
-    for (size_t i = 0; i + 4 <= text.size(); ++i){
-        if ((unsigned char)text[i]     == 0xC2 &&
-            (unsigned char)text[i + 1] == 0xA7 &&
-            text[i + 2] == '#'){
-            colorCode = text[i + 3];
-            found = true;
-            break;
-        }
-    }
-
-    if (!found)
-        return;
-
-    if (!gSP_KeyDown && sWasHDown){
+    if (!gSP_KeyDown && sWasHDown)
         sPreviewEnabled = !sPreviewEnabled;
-    }
     sWasHDown = gSP_KeyDown;
 
     if (!sPreviewEnabled)
         return;
 
+    const std::string& text = self->mFilteredContent;
+
+    if (text.find("\xC2\xA7v") == std::string::npos)
+        return;
+
+    if (text.size() < 6)
+        return;
+
+    char hi = text[2];
+    char lo = text[5];
+    int index = (hex(hi) << 4) | hex(lo);
+
+    size_t colorPos = text.find("\xC2\xA7#", 0);
+    if (colorPos == std::string::npos || colorPos + 3 >= text.size())
+        return;
+
+    char colorCode = text[colorPos + 3];
+
     float px = self->mCursorX + self->mOffsetX + 2.0f;
     float py = self->mCursorY + self->mOffsetY + self->mBoxHeight + 2.0f;
 
-    ShulkerRenderer::render(ctx, px, py, colorCode);
+    ShulkerRenderer::render(ctx, px, py, index, colorCode);
 }
