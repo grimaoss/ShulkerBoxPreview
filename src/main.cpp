@@ -19,6 +19,9 @@ ListTag_size_t ListTag_size = nullptr;
 ItemStackBase_getName_t ItemStackBase_getName = nullptr;
 ItemStackBase_ctor_t ItemStackBase_ctor = nullptr;
 ItemStackBase_getDamageValue_t ItemStackBase_getDamageValue = nullptr;
+Item_getId_t Item_getId = nullptr;
+ItemStackBase_getItem_t ItemStackBase_getItem = nullptr;
+CompoundTag_getByte_t CompoundTag_getByte = nullptr;
 
 extern "C" [[gnu::visibility("default")]] void mod_preinit() {}
 extern "C" [[gnu::visibility("default")]] void mod_init()
@@ -99,23 +102,27 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
     ItemStackBase_getDamageValue = 
     reinterpret_cast<ItemStackBase_getDamageValue_t>(isbgetdmgaddr);
 
-    auto Item_getIdaddr = scan ( 
+    auto Item_getIdaddr = scan( 
         "0F B7 87 8A 00 00 00 C3"_sig
     ); 
     Item_getId = 
     reinterpret_cast<Item_getId_t>(Item_getIdaddr);
 
-    auto ItemStackBase_getItemaddr = scan(
+    auto Isbgetitemaddr = scan(
         "48 8B 47 08 48 85 C0 74 04 48 8B 00 C3 31 C0 C3"_sig
     ); 
     ItemStackBase_getItem =  
-    reinterpret_cast<ItemStackBase_getItem_t>(ItemStackBase_getItemaddr);
+    reinterpret_cast<ItemStackBase_getItem_t>(Isbgetitemaddr);
 
-    auto CompoundTag_getByteAddr = scan( 
+    auto CtagGetByteAddr = scan( 
         "53 48 83 EC 20 48 89 FB 64 48 8B 04 25 28 00 00 00 48 89 44 24 18 48 89 74 24 08 48 89 54 24 10 48 83 C7 08 48 8D 74 24 08 E8 62 D8 01 00 48 83"_sig 
     ); 
     CompoundTag_getByte = 
-    reinterpret_cast<CompoundTag_getByte_t>(CompoundTag_getByteAddr);
+    reinterpret_cast<CompoundTag_getByte_t>(CtagGetByteAddr);
+
+    auto textureGroup_getTexturea_addr = scan(
+        "55 41 57 41 56 41 55 41 54 53 48 81 EC F8 00 00 00 45 89 CD 4D 89 C7 89 4C 24 0C 49 89 D6 49 89 F4 48 89 7C 24 10 64 48 8B 04 25 28 00 00 00 48"_sig
+    );
 
     // ShulkerBoxBlockItem
     auto ZTS19ShulkerBoxBlockItem = hat::find_pattern(range1, hat::object_to_signature("19ShulkerBoxBlockItem")).get();
@@ -127,16 +134,6 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
         reinterpret_cast<Shulker_appendHover_t>(vtshulk53[53]);
     vtshulk53[53] = reinterpret_cast<void *>(&ShulkerBoxBlockItem_appendFormattedHovertext_hook);
 
-    // WItem
-    auto ZTSWItem = hat::find_pattern(range1, hat::object_to_signature("10WeaponItem")).get();
-    auto ZTIWItem = hat::find_pattern(range2, hat::object_to_signature(ZTSWItem)).get() - sizeof(void *);
-    auto ZTVWItem = hat::find_pattern(range2, hat::object_to_signature(ZTIWItem)).get() + sizeof(void *);
-    void **vwitem = reinterpret_cast<void **>(ZTVWItem);
-
-    WItem_appendFormattedHovertext_orig =
-        reinterpret_cast<WItem_appendHover_t>(vwitem[53]);
-    vwitem[53] = reinterpret_cast<void *>(&WItem_appendFormattedHovertext_hook);
-
     // HovertextRenderer
     auto _ZTS17HoverTextRenderer = hat::find_pattern(range1, hat::object_to_signature("17HoverTextRenderer")).get();
     auto _ZTI17HoverTextRenderer = hat::find_pattern(range2, hat::object_to_signature(_ZTS17HoverTextRenderer)).get() - sizeof(void *);
@@ -146,6 +143,5 @@ extern "C" [[gnu::visibility("default")]] void mod_init()
     HoverRenderer_renderHoverBox_orig =
         reinterpret_cast<RenderHoverBoxFn>(vtHR[17]);
     vtHR[17] = reinterpret_cast<void *>(&HoverRenderer_renderHoverBox_hook);
-
 
 }

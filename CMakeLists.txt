@@ -27,27 +27,41 @@ FetchContent_Declare(properties-parser
     EXCLUDE_FROM_ALL
 )
 
-FetchContent_MakeAvailable(libhat properties-parser)
-FetchContent_MakeAvailable(safetyhook)
-FetchContent_MakeAvailable(zydis)
+FetchContent_Declare(glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 0.9.9.8)
+
+FetchContent_MakeAvailable(
+    libhat
+    safetyhook
+    zydis
+    properties-parser
+    glm
+)
 
 add_library(shulke SHARED
-    src/main.cpp src/ui/minecraftuirendercontext.cpp src/shulkerenderer/shulkerrenderer.cpp src/ui/fakenineslice.cpp src/util/keybinds.cpp src/util/pstate.cpp
+    src/main.cpp
+    src/ui/minecraftuirendercontext.cpp
+    src/shulkerenderer/shulkerrenderer.cpp
+    src/ui/fakenineslice.cpp
+    src/util/keybinds.cpp
+    src/util/scache.cpp
 )
 
 target_include_directories(shulke PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_options(shulke PRIVATE
-    -static-libstdc++
-)
-
 target_link_libraries(shulke PUBLIC
+    glm::glm
     libhat::libhat
     properties-parser
     safetyhook::safetyhook
     Zydis::Zydis
+)
+
+target_link_options(shulke PRIVATE
+    -static-libstdc++
 )
 
 set_target_properties(shulke PROPERTIES

@@ -1,32 +1,10 @@
 #pragma once
-#include <string>
 #include <cstdint>
-
-//this whole thing is basically copied over from amethyst and 1.16 pdb, except for a few which have been tested and work
-#pragma pack(push, 4)
-struct NinesliceInfo
-{
-    float left;
-    float right;
-    float top;
-    float bottom;
-};
-#pragma pack(pop)
-
-namespace mce
-{
-    struct Color;
-    class TexturePtr;
-}
-
-namespace ui
-{
-    enum class TextAlignment : std::uint8_t;
-}
+#include <string>
+#include <glm/glm.hpp>
 
 #pragma pack(push, 4)
-struct RectangleArea
-{
+struct RectangleArea {
     float _x0;
     float _x1;
     float _y0;
@@ -34,114 +12,133 @@ struct RectangleArea
 };
 #pragma pack(pop)
 
-namespace mce
-{
-    struct Color
-    {
-        float r, g, b, a;
+#pragma pack(push, 4)
+struct NinesliceInfo {
+    float left;
+    float right;
+    float top;
+    float bottom;
+};
+#pragma pack(pop)
+
+
+namespace mce {
+    struct Color { float r, g, b, a; };
+
+    class TexturePtr {
+    public:
+        void* texture;
+        void* resourceLocation;
     };
 }
 
-namespace mce
-{
-    class TexturePtr
-    {
-    public:
-        void *texture;
-        void *resourceLocation;
+namespace ui {
+    enum class TextAlignment : uint8_t {
+        Left,
+        Right,
+        Center
     };
 }
 
 struct TextMeasureData;
 struct CaretMeasureData;
 struct ComponentRenderBatch;
+struct MinecraftUIMeasureStrategy;
 class Font;
-class CustomRenderComponent;
 class ResourceLocation;
-class MinecraftUIMeasureStrategy;
 class HashedString;
+class CustomRenderComponent;
+class ClientInstance;
+class ScreenContext;
+class UIRepository;
+class FontHandle;
+class UIScene;
 
-class MinecraftUIRenderContext
-{
+class MinecraftUIRenderContext {
+
+
 public:
-    void *vtable; // shouldn't be here but eh for the index ig
+    ClientInstance* mClient;                 // 0x08
+    ScreenContext*  mScreenContext;          // 0x10
+    std::byte       mMeasureStrategy[0x20];  // 0x18
+    float           mTextAlpha;              // 0x38
+    std::byte       _pad3C[4];                // 0x3C
+    UIRepository*   mUIRepository;           // 0x40
+    void*           mUIService1;              // 0x48
+    void*           mUIService2;              // 0x50
+    std::byte       _pad58[0x28];              // 0x58
+    mce::TexturePtr** mTextureGroups;         // 0x80
+    std::byte       _pad88[0x48];              // 0x88
+    FontHandle*     mDebugFontHandle;         // 0xD0
+    const UIScene*  mCurrentScene;            // 0x120
+
+public:
     virtual ~MinecraftUIRenderContext();
+    virtual float getLineLength(Font&, const std::string&, float, bool);
+    virtual float getTextAlpha();
+    virtual void  setTextAlpha(float);
 
-    virtual float getLineLength(
-        Font &font, std::string const &, float, bool) const;
-
-    virtual float getTextAlpha() const;
-    virtual void setTextAlpha(float);
     virtual void drawDebugText(
-        RectangleArea const &, std::string const &, mce::Color const &,
-        float, ui::TextAlignment,
-        TextMeasureData const &, CaretMeasureData const &);
+        const RectangleArea&,
+        const std::string&,
+        const mce::Color&,
+        float,
+        ui::TextAlignment,
+        const TextMeasureData&,
+        const CaretMeasureData&
+    );
 
     virtual void drawText(
-        Font &, RectangleArea const &, std::string const &,
-        mce::Color const &, float, ui::TextAlignment,
-        TextMeasureData const &, CaretMeasureData const &);
+        Font&,
+        const RectangleArea&,
+        const std::string&,
+        const mce::Color&,
+        float,
+        ui::TextAlignment,
+        const TextMeasureData&,
+        const CaretMeasureData&
+    );
 
     virtual void flushText(float);
+
     virtual void drawImage(
-        mce::TexturePtr const& tex,
-        float const* pos,   
-        float const* size,   
-        float const* uv0,    
-        float const* uv1,   
-        unsigned char flags //
-);
+        const mce::TexturePtr&,
+        const glm::vec2&,
+        const glm::vec2&,
+        const glm::vec2&,
+        const glm::vec2&
+    );
 
-    virtual void drawNineslice(
-        mce::TexturePtr const &, NinesliceInfo const &);
-
-    virtual void flushImages(
-        mce::Color const &, float, HashedString const &);
-
-    virtual void beginSharedMeshBatch(
-        ComponentRenderBatch &);
-
-    virtual void endSharedMeshBatch(
-        ComponentRenderBatch &);
-
-    virtual void _unk13();
-    virtual void _unk14();
-
-    virtual void drawRectangle(
-        RectangleArea const &, mce::Color const &, float, int);
-
-    virtual void fillRectangle(
-        RectangleArea const &, mce::Color const &, float);
-
+    virtual void drawNineslice(const mce::TexturePtr&, const NinesliceInfo&);
+    virtual void flushImages(const mce::Color&, float, const HashedString&);
+    virtual void beginSharedMeshBatch(ComponentRenderBatch&);
+    virtual void endSharedMeshBatch(ComponentRenderBatch&);
+    virtual void unk_13();
+    virtual void unk_14();
+    virtual void drawRectangle(const RectangleArea&, const mce::Color&, float, int);
+    virtual void fillRectangle(const RectangleArea&, const mce::Color&, float);
     virtual void increaseStencilRef();
     virtual void decreaseStencilRef();
     virtual void resetStencilRef();
-    virtual void fillRectangleStencil(RectangleArea const &);
-    virtual void enableScissorTest(RectangleArea const &);
+    virtual void fillRectangleStencil(const RectangleArea&);
+    virtual void enableScissorTest(const RectangleArea&);
     virtual void disableScissorTest();
-    virtual void setClippingRectangle(RectangleArea const &);
+    virtual void setClippingRectangle(const RectangleArea&);
     virtual void setFullClippingRectangle();
     virtual void saveCurrentClippingRectangle();
     virtual void restoreSavedClippingRectangle();
     virtual RectangleArea getFullClippingRectangle() const;
-    virtual void _unk28();
-
-    virtual void renderCustom(
-        CustomRenderComponent *, int, RectangleArea &);
-
-    virtual void cleanup();
-    virtual void _unk31();
-
-    virtual mce::TexturePtr getTexture(
-        ResourceLocation const &, bool);
-
-    virtual void _unk33();
-    virtual void _unk34();
-    virtual void _unk35();
-    virtual void touchTexture(ResourceLocation const &);
-
-    virtual MinecraftUIMeasureStrategy *getMeasureStrategy();
-    virtual void snapImageSizeToGrid(void *sizeVec);
-    virtual void _unk39();
+    virtual void unk_28(); 
+    virtual void renderCustom(CustomRenderComponent*, int, RectangleArea&);
+    virtual void unk_30();
+    virtual void unk_31();
+    virtual void unk_32();
+    virtual void unk_33();
+    virtual void unk_34();
+    virtual mce::TexturePtr getUITextureInfo(const ResourceLocation&, bool);
+    virtual void touchTexture(const ResourceLocation&);
+    virtual MinecraftUIMeasureStrategy* getMeasureStrategy();
+    virtual void snapImageSizeToGrid(glm::vec2&);
+    virtual void unk_39();
     virtual void notifyImageEstimate(std::uint64_t);
 };
