@@ -1,8 +1,10 @@
 #pragma once
-#include "item/itemstackbase.h"
+#include "item/item.h"
 #include "shulkerenderer/colors.h"
-#include "util/xhelper.h"
+#include "item/itemstackbase.h"
 #include "util/scache.h"
+#include "nbt/compoundtag.h"
+#include "nbt/listtag.h"
 #include <string>
 
 class ShulkerBoxBlockItem;
@@ -38,7 +40,7 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     int index = (reinterpret_cast<uintptr_t>(stack) >> 4) & (SHULKER_CACHE_SIZE - 1);
 
     for (int i = 0; i < SHULKER_SLOT_COUNT; ++i)
-        gShulkerCache[index][i].valid = false;
+        ShulkerCache[index][i].valid = false;
 
     void* list = CompoundTag_getList(stack->mUserData, "Items", 5);
     if (!list)
@@ -57,7 +59,7 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
         if (slot >= SHULKER_SLOT_COUNT)
             continue;
 
-        ShulkerSlotCache& sc = gShulkerCache[index][slot];
+        ShulkerSlotCache& sc = ShulkerCache[index][slot];
         ItemStackBase_loadItem(asISB(sc.isb), tag);
         sc.count = count;
         sc.valid = true;

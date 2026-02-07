@@ -9,19 +9,7 @@
 #include <libhat.hpp>
 #include <libhat/scanner.hpp>
 
-class ListTag;
-
-ItemStackBase_loadItem_t ItemStackBase_loadItem = nullptr;
-CompoundTag_getList_t CompoundTag_getList = nullptr;
-CompoundTag_contains_t CompoundTag_contains = nullptr;
-ListTag_get_t ListTag_get = nullptr;
-ListTag_size_t ListTag_size = nullptr;
-ItemStackBase_getName_t ItemStackBase_getName = nullptr;
-ItemStackBase_ctor_t ItemStackBase_ctor = nullptr;
-ItemStackBase_getDamageValue_t ItemStackBase_getDamageValue = nullptr;
 Item_getId_t Item_getId = nullptr;
-ItemStackBase_getItem_t ItemStackBase_getItem = nullptr;
-CompoundTag_getByte_t CompoundTag_getByte = nullptr;
 
 extern "C" [[gnu::visibility("default")]] void mod_preinit() {}
 extern "C" [[gnu::visibility("default")]] void mod_init()

@@ -40,3 +40,6 @@ public:
     virtual void vfunc34() = 0;
     virtual short getMaxDamage() const; 
 };
+
+using Item_getId_t = unsigned short (*)(void*);
+extern Item_getId_t Item_getId; 
