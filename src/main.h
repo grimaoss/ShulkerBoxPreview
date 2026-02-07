@@ -3,4 +3,6 @@
 #include "hooks/shulkerboxblockitemappendhook.h"
 #include "hooks/minecraftuirendercontexthook.h"
 #include "hooks/renderhoverboxhook.h"
-#include "util/xhelper.h"
+#include "item/itemstackbase.h"
+#include "nbt/compoundtag.h"
+#include "nbt/listtag.h"

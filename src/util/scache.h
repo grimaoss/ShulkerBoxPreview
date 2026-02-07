@@ -1,11 +1,11 @@
 #pragma once
 #include <cstddef>
 #include <cstdint>
-
+//this is temporary
 class ItemStackBase;
 
 struct ItemStackBaseOpaque {
-    alignas(16) std::byte data[0x300];
+    alignas(16) std::byte data[0x800]; // a very arbitrary value, more bytes here mean less freezes in game inv 
 };
 
 static inline ItemStackBase* asISB(ItemStackBaseOpaque& o) {
@@ -21,4 +21,4 @@ struct ShulkerSlotCache {
     bool valid;
 };
 
-extern ShulkerSlotCache gShulkerCache[SHULKER_CACHE_SIZE][SHULKER_SLOT_COUNT];
+extern ShulkerSlotCache ShulkerCache[SHULKER_CACHE_SIZE][SHULKER_SLOT_COUNT];

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(shulke)
 
@@ -41,6 +41,9 @@ FetchContent_MakeAvailable(
 
 add_library(shulke SHARED
     src/main.cpp
+    src/item/itemstackbase.cpp
+    src/nbt/listtag.cpp
+    src/nbt/compoundtag.cpp
     src/ui/minecraftuirendercontext.cpp
     src/shulkerenderer/shulkerrenderer.cpp
     src/util/keybinds.cpp

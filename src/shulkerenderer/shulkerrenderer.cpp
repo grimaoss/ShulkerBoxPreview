@@ -14,7 +14,7 @@ void ShulkerRenderer::render(
     constexpr int   ROWS = 3;
     constexpr float SLOT = 18.0f;
     constexpr float DRAW = 17.5f;
-    constexpr float PAD  = 3.0f;
+    constexpr float PAD  = 6.0f;
     constexpr float BEV  = 0.25f;
 
     mce::Color tint = getShulkerTint(colorCode);
@@ -51,7 +51,7 @@ void ShulkerRenderer::render(
     for (int r = 0; r < ROWS; ++r) {
         for (int c = 0; c < COLS; ++c) {
             int slotIndex = r * COLS + c;
-            ShulkerSlotCache& sc = gShulkerCache[index][slotIndex];
+            ShulkerSlotCache& sc = ShulkerCache[index][slotIndex];
 
             float sx = sx0 + c * SLOT;
             float sy = sy0 + r * SLOT;
