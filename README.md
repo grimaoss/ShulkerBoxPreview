@@ -1,4 +1,4 @@
-# ShulkerBoxPreview
+# mcpelauncher-shulkerboxpreview
 
 This mod currently **only supports Minecraft Bedrock version 1.21.114**.  
 Using it on other versions may result in crashes or undefined behavior.
@@ -8,3 +8,4 @@ Using it on other versions may result in crashes or undefined behavior.
 
 ## Preview
 ![ShulkerBox Preview](1.png)
+
