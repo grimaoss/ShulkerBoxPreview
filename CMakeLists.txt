@@ -45,6 +45,7 @@ add_library(shulke SHARED
     src/nbt/listtag.cpp
     src/nbt/compoundtag.cpp
     src/ui/minecraftuirendercontext.cpp
+    src/ui/nineslicehelper.cpp
     src/shulkerenderer/shulkerrenderer.cpp
     src/util/keybinds.cpp
     src/util/scache.cpp

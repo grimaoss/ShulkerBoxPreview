@@ -1,4 +1,110 @@
 #include "shulkerrenderer.h"
+#include <cstdio>
+
+namespace {
+constexpr int kColumns = 9;
+constexpr int kRows = 3;
+constexpr float kSlotStride = 18.0f;
+constexpr float kSlotDrawSize = 17.5f;
+constexpr float kPanelPadding = 6.0f;
+constexpr float kCountTextHeight = 6.0f;
+
+const HashedString kFlushMaterial("ui_flush");
+const NinesliceHelper kPanelNineSlice(16.0f, 16.0f, 4.0f, 4.0f);
+
+struct CachedUiTextures {
+    bool loaded = false;
+    mce::TexturePtr panel;
+    mce::TexturePtr slot;
+};
+
+inline bool hasTexture(const mce::TexturePtr& texture) {
+    return static_cast<bool>(texture.mClientTexture);
+}
+
+CachedUiTextures& getUiTextures(MinecraftUIRenderContext& ctx) {
+    static CachedUiTextures textures;
+    if (!textures.loaded) {
+        textures.panel = ctx.getTexture(
+            ResourceLocation("textures/ui/dialog_background_opaque", ResourceFileSystem::UserPackage),
+            false
+        );
+        textures.slot = ctx.getTexture(
+            ResourceLocation("textures/ui/item_cell", ResourceFileSystem::UserPackage),
+            false
+        );
+        textures.loaded = true;
+    }
+    return textures;
+}
+
+void drawPanelTexture(MinecraftUIRenderContext& ctx, const CachedUiTextures& textures, const RectangleArea& panel) {
+    if (!hasTexture(textures.panel))
+        return;
+
+    kPanelNineSlice.draw(ctx, panel, textures.panel.getClientTexture());
+}
+
+void drawSlotTexture(MinecraftUIRenderContext& ctx, const CachedUiTextures& textures, const RectangleArea& slotRect) {
+    if (!hasTexture(textures.slot))
+        return;
+
+    const glm::vec2 pos{slotRect._x0, slotRect._y0};
+    const glm::vec2 size{slotRect._x1 - slotRect._x0, slotRect._y1 - slotRect._y0};
+    const glm::vec2 uv{0.0f, 0.0f};
+    const glm::vec2 uvSize{1.0f, 1.0f};
+    ctx.drawImage(textures.slot.getClientTexture(), pos, size, uv, uvSize, false);
+}
+
+void drawStackCountText(
+    Font& font,
+    float slotX,
+    float slotY,
+    const char* text,
+    const TextMeasureData& measureData,
+    const CaretMeasureData& caretData
+) {
+    const float textWidth = ActiveUIContext->getLineLength(font, text, measureData.fontSize, false);
+    const float anchorX = slotX + kSlotDrawSize - 0.5f;
+    const float anchorY = slotY + kSlotDrawSize - 1.5f;
+
+    const RectangleArea shadowRect{
+        anchorX - textWidth + 1.0f,
+        anchorX + 1.0f,
+        anchorY - kCountTextHeight + 1.0f,
+        anchorY + 1.0f
+    };
+
+    const RectangleArea textRect{
+        anchorX - textWidth,
+        anchorX,
+        anchorY - kCountTextHeight,
+        anchorY
+    };
+
+    ActiveUIContext->drawText(
+        font,
+        shadowRect,
+        text,
+        mce::Color{0.0f, 0.0f, 0.0f, 0.75f},
+        ui::TextAlignment::Right,
+        1.0f,
+        measureData,
+        caretData
+    );
+
+    ActiveUIContext->drawText(
+        font,
+        textRect,
+        text,
+        mce::Color{1.0f, 1.0f, 1.0f, 1.0f},
+        ui::TextAlignment::Right,
+        1.0f,
+        measureData,
+        caretData
+    );
+}
+} // namespace
 
 void ShulkerRenderer::render(
     MinecraftUIRenderContext* ctx,
@@ -10,124 +116,58 @@ void ShulkerRenderer::render(
     if (!ctx || !ActiveUIContext || !ActiveUIFont)
         return;
 
-    constexpr int   COLS = 9;
-    constexpr int   ROWS = 3;
-    constexpr float SLOT = 18.0f;
-    constexpr float DRAW = 17.5f;
-    constexpr float PAD  = 6.0f;
-    constexpr float BEV  = 0.25f;
+    const mce::Color tint = getShulkerTint(colorCode);
+    const CachedUiTextures& textures = getUiTextures(*ctx);
 
-    mce::Color tint = getShulkerTint(colorCode);
-    mce::Color panelFill { tint.r, tint.g, tint.b, 0.95f };
-    mce::Color slotBorder = tint;
-    mce::Color slotFill {
-        tint.r * 0.30f,
-        tint.g * 0.30f,
-        tint.b * 0.30f,
-        1.0f
-    };
-
-    RectangleArea panel {
+    const RectangleArea panelRect{
         x,
-        x + COLS * SLOT + PAD * 2.0f,
+        x + kColumns * kSlotStride + kPanelPadding * 2.0f,
         y,
-        y + ROWS * SLOT + PAD * 2.0f
+        y + kRows * kSlotStride + kPanelPadding * 2.0f
     };
-    ctx->fillRectangle(panel, panelFill, panelFill.a);
 
-    float sx0 = x + PAD;
-    float sy0 = y + PAD;
+    drawPanelTexture(*ctx, textures, panelRect);
+    ctx->flushImages(tint, 1.0f, kFlushMaterial);
+
+    const float slotOriginX = x + kPanelPadding;
+    const float slotOriginY = y + kPanelPadding;
 
     Font& font = *ActiveUIFont;
 
-    TextMeasureData tmd{};
-    tmd.fontSize = 1.0f;
-    tmd.renderShadow = false;
+    TextMeasureData measureData{};
+    measureData.fontSize = 1.0f;
+    measureData.renderShadow = false;
 
-    CaretMeasureData cmd{};
-    cmd.position = 0;
-    cmd.shouldRender = false;
+    CaretMeasureData caretData{};
+    caretData.position = 0;
+    caretData.shouldRender = false;
 
-    for (int r = 0; r < ROWS; ++r) {
-        for (int c = 0; c < COLS; ++c) {
-            int slotIndex = r * COLS + c;
-            ShulkerSlotCache& sc = ShulkerCache[index][slotIndex];
+    for (int row = 0; row < kRows; ++row) {
+        for (int column = 0; column < kColumns; ++column) {
+            const int slotIndex = row * kColumns + column;
+            ShulkerSlotCache& slotCache = ShulkerCache[index][slotIndex];
 
-            float sx = sx0 + c * SLOT;
-            float sy = sy0 + r * SLOT;
+            const float slotX = slotOriginX + column * kSlotStride;
+            const float slotY = slotOriginY + row * kSlotStride;
 
-            RectangleArea slot { sx, sx + DRAW, sy, sy + DRAW };
-            ctx->fillRectangle(slot, slotBorder, slotBorder.a);
-
-            RectangleArea inner {
-                slot._x0 + BEV,
-                slot._x1 - BEV,
-                slot._y0 + BEV,
-                slot._y1 - BEV
+            const RectangleArea slotRect{
+                slotX,
+                slotX + kSlotDrawSize,
+                slotY,
+                slotY + kSlotDrawSize
             };
-            ctx->fillRectangle(inner, slotFill, slotFill.a);
+            drawSlotTexture(*ctx, textures, slotRect);
 
-            if (!sc.valid || sc.count <= 1)
+            if (!slotCache.valid || slotCache.count <= 1)
                 continue;
 
-            char buf[8];
-            snprintf(buf, sizeof(buf), "%u", sc.count);
-
-            //anchor BotRt
-            float anchorX = sx + DRAW - 0.5f;
-            float anchorY = sy + DRAW - 1.5f;
-
-            
-            float textW = ActiveUIContext->getLineLength(
-                font,
-                buf,
-                tmd.fontSize,
-                false
-            );
-
-            //heighttext
-            float textH = 6.0f;
-
-            RectangleArea shadow {
-                anchorX - textW + 1.0f,
-                anchorX + 1.0f,
-                anchorY - textH + 1.0f,
-                anchorY + 1.0f
-            };
-
-            RectangleArea text {
-                anchorX - textW,
-                anchorX,
-                anchorY - textH,
-                anchorY
-            };
-
-            // shadow
-            ActiveUIContext->drawText(
-                font,
-                shadow,
-                buf,
-                mce::Color{0, 0, 0, 0.75f},
-                1.0f,
-                ui::TextAlignment::Right,
-                tmd,
-                cmd
-            );
-
-            // text
-            ActiveUIContext->drawText(
-                font,
-                text,
-                buf,
-                mce::Color{1, 1, 1, 1},
-                1.0f,
-                ui::TextAlignment::Right,
-                tmd,
-                cmd
-            );
-
+            char countText[8];
+            std::snprintf(countText, sizeof(countText), "%u", slotCache.count);
+            drawStackCountText(font, slotX, slotY, countText, measureData, caretData);
         }
     }
 
-    ctx->flushText(0.0f);
+    ctx->flushImages(tint, 1.0f, kFlushMaterial);
+    ctx->flushText(0.0f, std::nullopt);
 }
+

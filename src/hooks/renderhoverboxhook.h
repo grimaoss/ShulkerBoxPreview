@@ -62,7 +62,7 @@ inline void HoverRenderer_renderHoverBox_hook(
 
     char colorCode = text[colorPos + 3];
 
-    float px = self->mCursorX + self->mOffsetX + 2.0f;
+    float px = self->mCursorX + self->mOffsetX;
     float py = self->mCursorY + self->mOffsetY + self->mBoxHeight + 2.0f;
 
     ShulkerRenderer::render(ctx, px, py, index, colorCode);
