@@ -6,7 +6,7 @@ A mod for [mcpelauncher](https://github.com/minecraft-linux/mcpelauncher-manifes
 
 ## Usage
 Create a `mods` directory in your mcpelauncher profile (for example `~/.local/share/mcpelauncher/mods`) if you do not already have one.
-Place `libshulke.so` in that `mods` directory, then launch the game
+Place [libshulke.so](https://github.com/Kashifro/mcpelauncher-shulkprev/releases/download/v1/libshulke.so) in that `mods` directory, then launch the game
 Hover a shulker box item tooltip and press `H` (default) to toggle the preview panel.
 
 From Mods -> `Shulker Preview`, you can:
