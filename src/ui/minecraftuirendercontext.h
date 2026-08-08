@@ -69,8 +69,8 @@ public:
 
 public:
     const ClientTexture& getClientTexture() const {
-        static const ClientTexture kEmpty{};
-        return mClientTexture ? mClientTexture->mClientTexture : kEmpty;
+        static const ClientTexture Empty{};
+        return mClientTexture ? mClientTexture->mClientTexture : Empty;
     }
 };
 } // namespace mce

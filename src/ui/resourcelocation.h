@@ -42,12 +42,12 @@ public:
 
 private:
     static std::uint64_t computePathHash(std::string_view path) {
-        constexpr std::uint64_t kOffset = 1469598103934665603ULL;
-        constexpr std::uint64_t kPrime = 1099511628211ULL;
+        constexpr std::uint64_t Offset = 1469598103934665603ULL;
+        constexpr std::uint64_t Prime = 1099511628211ULL;
 
-        std::uint64_t hash = kOffset;
+        std::uint64_t hash = Offset;
         for (unsigned char ch : path) {
-            hash = static_cast<std::uint64_t>(ch) ^ (kPrime * hash);
+            hash = static_cast<std::uint64_t>(ch) ^ (Prime * hash);
         }
         return hash;
     }

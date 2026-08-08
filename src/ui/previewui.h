@@ -6,18 +6,18 @@
 #include "resourcelocation.h"
 
 namespace PreviewUi {
-inline constexpr int kColumns = 9;
-inline constexpr int kRows = 3;
-inline constexpr float kSlotStride = 18.0f;
-inline constexpr float kSlotDrawSize = 17.5f;
-inline constexpr float kItemDrawSize = 16.0f;
-inline constexpr float kItemInset = (kSlotStride - kItemDrawSize) * 0.5f;
-inline constexpr float kCountTextHeight = 6.0f;
-inline constexpr float kPanelPadding = 6.0f;
-inline constexpr float kPanelWidth = kColumns * kSlotStride + kPanelPadding * 2.0f;
-inline constexpr float kPanelHeight = kRows * kSlotStride + kPanelPadding * 2.0f;
-inline constexpr float kPanelScreenMargin = 4.0f;
-inline constexpr mce::Color kWhite{1.0f, 1.0f, 1.0f, 1.0f};
+inline constexpr int Columns = 9;
+inline constexpr int Rows = 3;
+inline constexpr float SlotStride = 18.0f;
+inline constexpr float SlotDrawSize = 17.5f;
+inline constexpr float ItemDrawSize = 16.0f;
+inline constexpr float ItemInset = (SlotStride - ItemDrawSize) * 0.5f;
+inline constexpr float CountTextHeight = 6.0f;
+inline constexpr float PanelPadding = 6.0f;
+inline constexpr float PanelWidth = Columns * SlotStride + PanelPadding * 2.0f;
+inline constexpr float PanelHeight = Rows * SlotStride + PanelPadding * 2.0f;
+inline constexpr float PanelScreenMargin = 4.0f;
+inline constexpr mce::Color White{1.0f, 1.0f, 1.0f, 1.0f};
 
 struct Placement {
     float x;
@@ -87,21 +87,21 @@ inline Placement placePanel(
 {
     float x = tooltipX;
     float y = anchorAbove
-        ? (tooltipY - kPanelHeight)
+        ? (tooltipY - PanelHeight)
         : (tooltipY + tooltipHeight);
 
     RectangleArea clip = ctx.getFullClippingRectangle();
     if (clip._x1 > clip._x0) {
         x = clampRange(
             x,
-            clip._x0 + kPanelScreenMargin,
-            clip._x1 - kPanelWidth - kPanelScreenMargin);
+            clip._x0 + PanelScreenMargin,
+            clip._x1 - PanelWidth - PanelScreenMargin);
     }
     if (clip._y1 > clip._y0) {
         y = clampRange(
             y,
-            clip._y0 + kPanelScreenMargin,
-            clip._y1 - kPanelHeight - kPanelScreenMargin);
+            clip._y0 + PanelScreenMargin,
+            clip._y1 - PanelHeight - PanelScreenMargin);
     }
 
     return {x, y};
@@ -110,27 +110,27 @@ inline Placement placePanel(
 inline RectangleArea makePanelRect(float x, float y) {
     return {
         x,
-        x + kPanelWidth,
+        x + PanelWidth,
         y,
-        y + kPanelHeight
+        y + PanelHeight
     };
 }
 
 inline RectangleArea makeSlotRect(float x, float y) {
     return {
         x,
-        x + kSlotDrawSize,
+        x + SlotDrawSize,
         y,
-        y + kSlotDrawSize
+        y + SlotDrawSize
     };
 }
 
 template <typename Fn>
 inline void forEachSlot(float ox, float oy, Fn&& fn) {
     for (int idx = 0; idx < 27; ++idx) {
-        int col = idx % kColumns;
-        int row = idx / kColumns;
-        fn(idx, ox + col * kSlotStride, oy + row * kSlotStride);
+        int col = idx % Columns;
+        int row = idx / Columns;
+        fn(idx, ox + col * SlotStride, oy + row * SlotStride);
     }
 }
 
@@ -175,6 +175,10 @@ inline void drawSlot(
         false);
 }
 
+inline constexpr mce::Color BundleNormal{0.40f, 0.40f, 1.00f, 1.0f};
+inline constexpr mce::Color BundleFull{1.00f, 0.40f, 0.40f, 1.0f};
+inline constexpr mce::Color BarBackground{0.0f, 0.0f, 0.0f, 1.0f};
+
 inline mce::Color durabilityColor(float ratio) {
     if (ratio < 0.0f)
         ratio = 0.0f;
@@ -218,7 +222,7 @@ inline void drawDurabilityValue(
 {
     RectangleArea rect{
         slotX + 1.0f,
-        slotX + kSlotDrawSize - 1.0f,
+        slotX + SlotDrawSize - 1.0f,
         slotY + 1.0f,
         slotY + 7.0f
     };
@@ -233,26 +237,57 @@ inline void drawDurabilityValue(
         defaultCaret());
 }
 
+inline void drawBundleFullnessBar(
+    MinecraftUIRenderContext& ctx,
+    float slotX,
+    float slotY,
+    int weight)
+{
+    if (weight < 0)
+        return;
+
+    float ratio = clampRange(static_cast<float>(weight) / 64.0f, 0.0f, 1.0f);
+
+    float bx = slotX + 2.0f;
+    float by = slotY + 13.0f;
+
+    RectangleArea bg{
+        bx,
+        bx + 13.0f,
+        by,
+        by + 2.0f
+    };
+    ctx.fillRectangle(bg, BarBackground, 1.0f);
+
+    RectangleArea bar{
+        bx,
+        bx + 13.0f * ratio,
+        by,
+        by + 1.0f
+    };
+    ctx.fillRectangle(bar, weight >= 64 ? BundleFull : BundleNormal, 1.0f);
+}
+
 inline void drawStackCountText(
     MinecraftUIRenderContext& ctx,
     float slotX,
     float slotY,
     const char* text)
 {
-    float ax = slotX + kSlotDrawSize - 0.5f;
-    float ay = slotY + kSlotDrawSize - 1.5f;
+    float ax = slotX + SlotDrawSize - 0.5f;
+    float ay = slotY + SlotDrawSize - 1.5f;
 
     RectangleArea rect{
         ax - 20.0f,
         ax,
-        ay - kCountTextHeight,
+        ay - CountTextHeight,
         ay
     };
 
     ctx.drawDebugText(
         rect,
         text,
-        kWhite,
+        White,
         ui::TextAlignment::Right,
         1.0f,
         defaultMeasure(),

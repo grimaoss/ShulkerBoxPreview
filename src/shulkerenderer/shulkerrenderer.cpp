@@ -5,7 +5,6 @@
 
 #include "colors.h"
 #include "item/item.h"
-#include "item/itemstack.h"
 #include "nbt/nbt.h"
 #include "render/barchelper.h"
 #include "ui/previewui.h"
@@ -65,6 +64,7 @@ struct ShulkerSlotRenderData {
     bool valid = false;
     bool hasGlint = false;
     int damageValue = -1;
+    int bundleWeight = -1; // 0..64 for bundles, -1 = not a bundle
 };
 
 struct alignas(16) StackStorage {
@@ -115,6 +115,7 @@ bool buildRenderDataFromNbt(
         slot.valid = true;
         slot.hasGlint = containsEnchantmentTagTree(tag);
         readItemDamageTagValue(tag, slot.damageValue);
+        slot.bundleWeight = readBundleWeight(tag);
     }
 
     return true;
@@ -150,9 +151,6 @@ void buildTransientStacks(
 
         ItemStackBase_ctor(stack);
 
-        if (ItemStack_vtable)
-            *reinterpret_cast<void***>(stack) = ItemStack_vtable;
-
         ItemStackBase_loadItem(stack, slotData[slot].itemTag);
 
         if (stack->mItem.get())
@@ -174,14 +172,16 @@ void drawSlotIcons(
         return;
 
     RectangleArea dummy{-10000, -9999, -10000, -9999};
-    ctx.fillRectangle(dummy, PreviewUi::kWhite, 1.0f);
-    ctx.flushImages(PreviewUi::kWhite, 1.0f, PreviewUi::flushMaterial());
+    ctx.fillRectangle(dummy, PreviewUi::White, 1.0f);
+    ctx.flushImages(PreviewUi::White, 1.0f, PreviewUi::flushMaterial());
 
     void* clientInstance = ctx.mClient;
     void* minecraftGame = getMinecraftGameFromClient(clientInstance);
     if (!minecraftGame) return;
 
-    alignas(16) std::byte barcStorage[kBarcStorageSize]{};
+    void* localPlayer = getClientLocalPlayer(clientInstance);
+
+    alignas(16) std::byte barcStorage[BarcStorageSize]{};
     void* barc = barcStorage;
 
     BaseActorRenderContext_ctor(barc, ctx.mScreenContext, clientInstance, minecraftGame);
@@ -200,17 +200,21 @@ void drawSlotIcons(
 
         if (slotData[slot].hasGlint) anyGlint = true;
 
-        float dx = x + PreviewUi::kItemInset;
-        float dy = y + PreviewUi::kItemInset;
+        float dx = x + PreviewUi::ItemInset;
+        float dy = y + PreviewUi::ItemInset;
 
         float px = dx;
         float py = dy;
+
+        unsigned int aux = localPlayer
+            ? getItemAuxIconValue(stack->mItem.get(), localPlayer, stack)
+            : 0;
 
         ItemRenderer_renderGuiItemNew(
             itemRenderer,
             barc,
             stack,
-            0, 0, 0,
+            aux, 0, 0,
             px, py,
             1.0f, 1.0f, 1.0f
         );
@@ -223,17 +227,21 @@ void drawSlotIcons(
             ItemStackBase* stack = getRenderableStack(stacks, slot);
             if (!stack) return;
 
-            float dx = x + PreviewUi::kItemInset;
-            float dy = y + PreviewUi::kItemInset;
+            float dx = x + PreviewUi::ItemInset;
+            float dy = y + PreviewUi::ItemInset;
 
             float px = dx;
             float py = dy;
+
+            unsigned int aux = localPlayer
+                ? getItemAuxIconValue(stack->mItem.get(), localPlayer, stack)
+                : 0;
 
             ItemRenderer_renderGuiItemNew(
                 itemRenderer,
                 barc,
                 stack,
-                0, 1, 1,
+                aux, 1, 1,
                 px, py,
                 1.0f, 1.0f, 1.0f
             );
@@ -284,8 +292,8 @@ void ShulkerRenderer::render(
     const mce::Color tint = applyTintIntensity(getShulkerTint(colorCode));
     const auto& tex = PreviewUi::getTextures(*ctx);
 
-    float ox = x + PreviewUi::kPanelPadding;
-    float oy = y + PreviewUi::kPanelPadding;
+    float ox = x + PreviewUi::PanelPadding;
+    float oy = y + PreviewUi::PanelPadding;
 
     PreviewUi::drawPanel(*ctx, tex, panel);
     ctx->flushImages(tint, 1.0f, PreviewUi::flushMaterial());
@@ -310,6 +318,10 @@ void ShulkerRenderer::render(
 
         if (getDurabilityInfo(stack, slotData[slot].damageValue, remaining, ratio)) {
             PreviewUi::drawDurabilityBar(*ctx, sx, sy, ratio);
+        }
+
+        if (slotData[slot].bundleWeight >= 0) {
+            PreviewUi::drawBundleFullnessBar(*ctx, sx, sy, slotData[slot].bundleWeight);
         }
 
         if (slotData[slot].count > 1) {

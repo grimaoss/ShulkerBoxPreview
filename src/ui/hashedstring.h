@@ -29,12 +29,12 @@ private:
         if (str.empty())
             return 0;
 
-        constexpr std::uint64_t kOffset = 0xCBF29CE484222325ULL;
-        constexpr std::uint64_t kPrime = 0x100000001B3ULL;
+        constexpr std::uint64_t Offset = 0xCBF29CE484222325ULL;
+        constexpr std::uint64_t Prime = 0x100000001B3ULL;
 
-        std::uint64_t hash = kOffset;
+        std::uint64_t hash = Offset;
         for (char ch : str)
-            hash = static_cast<std::uint64_t>(static_cast<unsigned char>(ch)) ^ (kPrime * hash);
+            hash = static_cast<std::uint64_t>(static_cast<unsigned char>(ch)) ^ (Prime * hash);
 
         return hash;
     }

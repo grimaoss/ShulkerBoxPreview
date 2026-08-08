@@ -23,7 +23,9 @@ using ItemRenderer_renderGuiItemNew_t = std::uint64_t (*) (
 extern ItemRenderer_renderGuiItemNew_t ItemRenderer_renderGuiItemNew;
 
 // 1.26 offsets from RE
-inline constexpr std::size_t kBarcStorageSize = 0x400;
-inline constexpr std::size_t kBarcItemRendererOffset = 0x58;      // BaseActorRenderContext + 88
-inline constexpr std::size_t kClientMinecraftGameOffset = 0xA8;   // ClientInstance + 168
-inline constexpr std::size_t kClientGetMinecraftGameVfIndex = 83; // vtable slot for getMinecraftGame
+inline constexpr std::size_t BarcStorageSize = 0x400;
+inline constexpr std::size_t BarcItemRendererOffset = 0x58;      // BaseActorRenderContext + 88
+inline constexpr std::size_t ClientMinecraftGameOffset = 0xA8;   // ClientInstance + 168
+inline constexpr std::size_t ClientGetMinecraftGameVfIndex = 83; // vtable slot for getMinecraftGame
+inline constexpr std::size_t ClientGetLocalPlayerVfIndex = 32;
+inline constexpr std::size_t ItemAuxIconValueVfIndex = 120;

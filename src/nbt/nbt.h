@@ -187,6 +187,17 @@ inline bool readIntTag(void* compound, const char* key, int& outValue) {
     }
 }
 
+// tag -> bundle_weight (0..64), -1 if not a bundle
+inline int readBundleWeight(void* itemTag) {
+    if (!itemTag)
+        return -1;
+    void* tagCompound = getCompoundTag(itemTag, "tag");
+    if (!tagCompound)
+        return -1;
+    int weight = 0;
+    return readIntTag(tagCompound, "bundle_weight", weight) ? weight : -1;
+}
+
 inline bool readItemDamageTagValue(void* compound, int& outValue) {
     if (!compound)
         return false;

@@ -1,6 +1,5 @@
 #pragma once
 #include "item/item.h"
-#include "item/itemstack.h"
 #include "nbt/nbt.h"
 #include "item/itemstackbase.h"
 #include "shulkerenderer/colors.h"
@@ -28,7 +27,7 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     std::string& out,
     bool flag)
 {
-    static constexpr char kHex[] = "0123456789abcdef";
+    static constexpr char Hex[] = "0123456789abcdef";
 
     if (ShulkerBoxBlockItem_appendFormattedHovertext_orig)
         ShulkerBoxBlockItem_appendFormattedHovertext_orig(
@@ -53,9 +52,9 @@ inline void ShulkerBoxBlockItem_appendFormattedHovertext_hook(
     }
     std::string prefix;
     prefix += "\xC2\xA7";
-    prefix += kHex[(tooltipId >> 4) & 0xF];
+    prefix += Hex[(tooltipId >> 4) & 0xF];
     prefix += "\xC2\xA7";
-    prefix += kHex[tooltipId & 0xF];
+    prefix += Hex[tooltipId & 0xF];
     prefix += "\xC2\xA7";
     prefix += color;
     
